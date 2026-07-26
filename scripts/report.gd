@@ -18,7 +18,6 @@ const REVEAL_OFFSET: float = 14.0
 @onready var _rank: Label = $Paper/RankLabel
 @onready var _bar_bg: ColorRect = $Paper/RankBarBg
 @onready var _bar_fill: ColorRect = $Paper/RankBarFill
-@onready var _unlock: Label = $Paper/UnlockLabel
 @onready var _restart: Button = $Paper/RestartButton
 
 var _revealed: bool = false
@@ -33,7 +32,7 @@ func _ready() -> void:
 	_restart.disabled = true
 	_restart.modulate.a = 0.0
 	_restart.pressed.connect(_on_restart_pressed)
-	for n: Control in [_title, _patient, _accuracy, _prep, _delay, _verdict, _rank, _unlock, _bar_bg]:
+	for n: Control in [_title, _patient, _accuracy, _prep, _delay, _verdict, _rank, _bar_bg]:
 		n.modulate.a = 0.0
 		n.position.y += REVEAL_OFFSET
 	for s in _stars:
@@ -90,10 +89,6 @@ func show_report() -> void:
 	_reveal_line(_bar_bg, "", 1.0)
 	await get_tree().create_timer(0.18).timeout
 	_grow_rank_bar()
-	await get_tree().create_timer(0.45).timeout
-
-	# 新解锁（shimmer）
-	_reveal_unlock()
 	await get_tree().create_timer(0.45).timeout
 
 	# 按钮
@@ -163,19 +158,6 @@ func _reveal_star(node: Label, filled: bool, pitch: float) -> void:
 		node.text = "☆"
 		var tw := create_tween()
 		tw.tween_property(node, "modulate:a", 0.28, 0.3)
-
-
-func _reveal_unlock() -> void:
-	_unlock.scale = Vector2(0.85, 0.85)
-	AudioManager.play("unlock", -2.0)
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(_unlock, "modulate:a", 1.0, 0.3)
-	tw.tween_property(_unlock, "position:y", _unlock.position.y - REVEAL_OFFSET, 0.4) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	var sc := create_tween()
-	sc.tween_property(_unlock, "scale", Vector2.ONE, 0.45) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _on_restart_pressed() -> void:

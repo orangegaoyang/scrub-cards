@@ -69,23 +69,3 @@ theme_override_font_sizes/font_size = 12
 text = "用途"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="OpProgressBg" type="ColorRect" parent="Body"]
-layout_mode = 1
-offset_left = 6.0
-offset_top = 140.0
-offset_right = 104.0
-offset_bottom = 147.0
-mouse_filter = 2
-visible = false
-color = Color(0.18, 0.2, 0.22, 0.85)
-
-[node name="OpProgressFill" type="ColorRect" parent="Body"]
-layout_mode = 1
-offset_left = 6.0
-offset_top = 140.0
-offset_right = 104.0
-offset_bottom = 147.0
-mouse_filter = 2
-visible = false
-color = Color(0.4, 0.95, 0.5, 1)

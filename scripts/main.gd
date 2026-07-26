@@ -14,6 +14,7 @@ const NUM_INSTRUMENTS: int = 6
 const SLOT_W: float = 110.0
 const SLOT_GAP: float = 20.0
 const SLOT_Y: float = 50.0
+const PLAYFIELD_SHIFT: float = -130.0  # 术中：槽位/卡牌层左推，给医生面板让位
 
 # 术中节奏
 const FIRST_DEMAND_DELAY: float = 1.0
@@ -166,9 +167,7 @@ func _handle_surgery_drop(card: Card) -> void:
 		card.flash_wrong()
 		GameState.record_wrong(false)
 		AudioManager.play("wrong", -4.0)
-		var home: Vector2 = _card_home.get(card, card.global_position)
-		var tw: Tween = card.create_tween()
-		tw.tween_property(card, "global_position", home, 0.25)
+		_bounce_home(card)
 
 
 func _rects_overlap_global(a: Control, b: Control) -> bool:
@@ -178,8 +177,9 @@ func _rects_overlap_global(a: Control, b: Control) -> bool:
 
 
 func _place_correct(card: Card, slot: Slot) -> void:
-	card.global_position = slot.global_position
-	_card_home[card] = slot.global_position
+	# 用本地坐标对齐（槽位层与卡牌层共享 transform，术中左推时一起平移）
+	card.position = slot.position
+	_card_home[card] = slot.position
 	card.lock_in_place()
 	slot.occupy(card)
 	slot.flash_correct()
@@ -192,9 +192,15 @@ func _reject(card: Card, slot: Slot) -> void:
 	slot.flash_wrong()
 	card.flash_wrong()
 	AudioManager.play("wrong", -4.0)
-	var home: Vector2 = _card_home.get(card, card.global_position)
+	_bounce_home(card)
+
+
+## 把卡牌弹回它的 home（本地坐标，兼容术中左推）。
+func _bounce_home(card: Card) -> void:
+	var home: Vector2 = _card_home.get(card, card.position)
 	var tw: Tween = card.create_tween()
-	tw.tween_property(card, "global_position", home, 0.25)
+	tw.tween_property(card, "position", home, 0.25) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
 
 
 # ───────── 术中循环 ─────────
@@ -205,6 +211,12 @@ func _on_start_pressed() -> void:
 		c.unlock_for_surgery()
 	GameState.start_surgery()
 	_doctor_panel.slide_in()
+	# 主战场左推，给右侧医生面板让位
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_slots_layer, "position:x", PLAYFIELD_SHIFT, 0.5) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
+	tw.tween_property(_cards_layer, "position:x", PLAYFIELD_SHIFT, 0.5) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
 	_demand_index = 0
 	_run_surgery_loop()
 
@@ -253,7 +265,6 @@ func _on_operate_complete(card: Card) -> void:
 
 
 func _spit_out(card: Card) -> void:
-	card.show_operation_progress(false)
 	card.mark_used()
 	card.locked = false
 	var target := _get_spit_target()

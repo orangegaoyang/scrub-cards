@@ -14,7 +14,6 @@ const OPERATE_DURATION: float = 2.0
 @onready var _demand_icon: ColorRect = $DemandIcon
 @onready var _demand_name: Label = $DemandName
 @onready var _status: Label = $StatusLabel
-@onready var _drop_zone: Control = $DropZone
 
 ## 需求激活期间为 true，允许 main 判定递送。
 var deliverable: bool = false
@@ -94,12 +93,15 @@ func receive_card(card: Card) -> bool:
 
 func start_operating(card: Card) -> void:
 	_status.text = "Halberg 操作中…"
-	# 操作期间藏起倒计时环；进度直接打在卡牌上（更聚焦）
-	_ring.visible = false
-	card.show_operation_progress(true)
+	# 卡牌吸附在圆环中心，圆环本身转绿色填充当操作进度（大而明显）
+	_demand_icon.visible = false
+	_ring.visible = true
+	_ring.auto_tension = false
+	_ring.color = Color(0.4, 0.95, 0.5)
 	_kill_ring_tween()
 	_ring_tween = create_tween()
-	_ring_tween.tween_method(card.set_operation_progress, 0.0, 1.0, OPERATE_DURATION)
+	_ring_tween.tween_property(_ring, "progress", 1.0, OPERATE_DURATION) \
+		.set_ease(Tween.EASE_OUT)
 	_ring_tween.finished.connect(_on_operate_done.bind(card))
 
 
@@ -107,14 +109,14 @@ func _on_operate_done(card: Card) -> void:
 	operate_complete.emit(card)
 
 
-## 递送区世界坐标矩形，供 main 做重叠判定。
+## 落点判定矩形 = 圆环本身（卡牌要拖到环里）。
 func get_drop_rect() -> Rect2:
-	return Rect2(_drop_zone.global_position, _drop_zone.size)
+	return Rect2(_ring.global_position, _ring.size)
 
 
-## 递送后卡牌吸附的目标点（递送区中心）。
+## 卡牌吸附目标 = 圆环中心。
 func get_drop_anchor_global_pos() -> Vector2:
-	return _drop_zone.global_position + _drop_zone.size * 0.5 - Card.CARD_SIZE * 0.5
+	return _ring.global_position + _ring.size * 0.5 - Card.CARD_SIZE * 0.5
 
 
 func _tween_ring(target: float, duration: float, on_done: Callable) -> void:

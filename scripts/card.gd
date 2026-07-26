@@ -19,8 +19,6 @@ const TILT_GAIN: float = 0.02       # 鼠标横向速度 → 倾斜
 @onready var _icon_rect: ColorRect = $Body/IconRect
 @onready var _name_label: Label = $Body/NameLabel
 @onready var _purpose_label: Label = $Body/PurposeLabel
-@onready var _op_bg: ColorRect = $Body/OpProgressBg
-@onready var _op_fill: ColorRect = $Body/OpProgressFill
 
 ## 由生成方在 add_child 前注入。
 var def: ProcedureData.InstrumentDef = null
@@ -39,13 +37,11 @@ func _ready() -> void:
 	custom_minimum_size = CARD_SIZE
 	size = CARD_SIZE
 	pivot_offset = CARD_SIZE * 0.5
-	for c: Control in [_shadow, _body, _icon_rect, _name_label, _purpose_label, _op_bg, _op_fill]:
+	for c: Control in [_shadow, _body, _icon_rect, _name_label, _purpose_label]:
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	_op_fill.pivot_offset = Vector2.ZERO  # 从左端填充
-	_op_fill.scale = Vector2.ZERO
 	if def != null:
 		_apply_visual()
 
@@ -164,18 +160,6 @@ func mark_used() -> void:
 	_icon_rect.modulate = Color(0.7, 0.7, 0.72, 1.0)
 	_shadow.position = REST_SHADOW
 	_shadow.modulate.a = 1.0
-
-
-## 操作进度条：医生使用该器械时显示，0→1 填满后弹出。
-func show_operation_progress(vis: bool) -> void:
-	_op_bg.visible = vis
-	_op_fill.visible = vis
-	if vis:
-		_op_fill.scale = Vector2.ZERO
-
-
-func set_operation_progress(p: float) -> void:
-	_op_fill.scale.x = clampf(p, 0.0, 1.0)
 
 
 ## 错误反馈：短暂闪红后恢复。
