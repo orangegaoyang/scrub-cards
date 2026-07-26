@@ -107,6 +107,18 @@ def main() -> None:
 	write_wav("spit", sweep(500.0, 950.0, 0.13, amp=0.45, decay=5.0))
 	# 开包：噪声迸发
 	write_wav("pack", noise(0.20, amp=0.50, decay=8.0, lp=0.3))
+	# 结算 sting：C 大三和弦（短促凯旋）
+	write_wav("sting", mix(sine(523.0, 0.45, amp=0.20, decay=3.5),
+							sine(659.0, 0.45, amp=0.18, decay=3.5),
+							sine(784.0, 0.45, amp=0.16, decay=3.5)))
+	# 行项 tick：极短软咔哒
+	write_wav("tick", sine(1200.0, 0.03, amp=0.22, decay=22.0))
+	# 星星点亮：亮 ping + 泛音
+	write_wav("star", mix(sine(1318.0, 0.28, amp=0.30, decay=5.0),
+							sine(2637.0, 0.28, amp=0.10, decay=8.0)))
+	# 解锁 shimmer：升频 + 高泛音
+	write_wav("unlock", mix(sweep(600.0, 1700.0, 0.42, amp=0.32, decay=3.0),
+							  sweep(1200.0, 2400.0, 0.42, amp=0.14, decay=5.0)))
 
 
 if __name__ == "__main__":
