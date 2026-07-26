@@ -23,6 +23,7 @@ signal demand_resolved(result: String)
 
 @onready var _slots_layer: Control = $SlotsLayer
 @onready var _cards_layer: Control = $CardsLayer
+@onready var _fx_layer: Control = $FxLayer
 @onready var _pack_layer: Control = $PackLayer
 @onready var _hud_label: Label = $HUDLabel
 @onready var _phase_label: Label = $PhaseLabel
@@ -77,6 +78,7 @@ func _spawn_pack() -> void:
 
 func _on_pack_opened(pack: SurgeryPack) -> void:
 	var origin: Vector2 = pack.global_position + pack.size * 0.5
+	_burst(origin, Color(0.95, 0.95, 0.8), 18, 1.3)
 	_spawn_shuffled_cards_from(origin)
 
 
@@ -89,6 +91,7 @@ func _spawn_shuffled_cards_from(origin: Vector2) -> void:
 		var card = CARD_SCENE.instantiate()
 		card.def = def
 		card.position = origin
+		card.rotation = _rng.randf_range(-0.15, 0.15)
 		_cards_layer.add_child(card)
 		card.drag_ended.connect(_on_card_drag_ended)
 		_cards.append(card)
@@ -149,6 +152,7 @@ func _handle_surgery_drop(card: Card) -> void:
 	else:
 		# 错误器械：闪红 + 弹回原位
 		card.flash_wrong()
+		AudioManager.play("wrong", -4.0)
 		var home: Vector2 = _card_home.get(card, card.global_position)
 		var tw: Tween = card.create_tween()
 		tw.tween_property(card, "global_position", home, 0.25)
@@ -166,12 +170,15 @@ func _place_correct(card: Card, slot: Slot) -> void:
 	card.lock_in_place()
 	slot.occupy(card)
 	slot.flash_correct()
+	_burst(card.global_position + card.size * 0.5, Color(0.6, 1.0, 0.55), 10)
+	AudioManager.play("correct", -4.0)
 	GameState.secure_prep_item(slot.index)
 
 
 func _reject(card: Card, slot: Slot) -> void:
 	slot.flash_wrong()
 	card.flash_wrong()
+	AudioManager.play("wrong", -4.0)
 	var home: Vector2 = _card_home.get(card, card.global_position)
 	var tw: Tween = card.create_tween()
 	tw.tween_property(card, "global_position", home, 0.25)
@@ -234,9 +241,15 @@ func _spit_out(card: Card) -> void:
 	card.mark_used()
 	card.locked = false
 	var target := _get_spit_target()
-	var tw: Tween = card.create_tween()
-	tw.tween_property(card, "global_position", target, 0.45) \
+	var tw_pos: Tween = card.create_tween()
+	tw_pos.tween_property(card, "global_position", target, 0.45) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
+	var tw_sc: Tween = card.create_tween()
+	tw_sc.tween_property(card, "scale", Vector2(1.18, 1.18), 0.10) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw_sc.tween_property(card, "scale", Vector2.ONE, 0.20)
+	_burst(card.global_position + card.size * 0.5, Color(0.7, 0.85, 1.0), 8)
+	AudioManager.play("spit", -4.0)
 
 
 func _get_spit_target() -> Vector2:
@@ -244,6 +257,26 @@ func _get_spit_target() -> Vector2:
 		_rng.randf_range(120.0, 520.0),
 		_rng.randf_range(540.0, 620.0)
 	)
+
+
+## 简易粒子：在 pos 撒出 count 个小色块，向外飞散并淡出。
+func _burst(pos: Vector2, color: Color, count: int = 12, spread: float = 1.0) -> void:
+	for i in count:
+		var s := ColorRect.new()
+		s.color = color
+		s.size = Vector2(5, 5)
+		s.position = pos - s.size * 0.5
+		s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_fx_layer.add_child(s)
+		var ang: float = _rng.randf_range(0.0, TAU)
+		var dist: float = _rng.randf_range(30.0, 110.0) * spread
+		var dur: float = _rng.randf_range(0.3, 0.5)
+		var dest := pos + Vector2(cos(ang), sin(ang)) * dist - s.size * 0.5
+		var tw := create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(s, "position", dest, dur).set_ease(Tween.EASE_OUT)
+		tw.tween_property(s, "modulate:a", 0.0, dur)
+		tw.chain().tween_callback(s.queue_free)
 
 
 func _finish_surgery() -> void:

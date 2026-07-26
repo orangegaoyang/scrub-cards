@@ -27,6 +27,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(PANEL_W, 720)
 	size = Vector2(PANEL_W, 720)
 	position = Vector2(1280, 0)  # 屏幕右外
+	_demand_icon.pivot_offset = _demand_icon.size * 0.5
 	clear_demand()
 
 
@@ -47,6 +48,7 @@ func clear_demand() -> void:
 	_ring.progress = 0.0
 	_ring.visible = false
 	_demand_icon.visible = false
+	_demand_icon.scale = Vector2.ZERO
 	_demand_name.visible = false
 	_status.text = ""
 
@@ -54,6 +56,7 @@ func clear_demand() -> void:
 func show_demand(def) -> void:
 	current_demand_id = def.id
 	_demand_icon.color = def.color
+	_demand_icon.scale = Vector2.ZERO
 	_demand_icon.visible = true
 	_demand_name.text = def.name_cn
 	_demand_name.visible = true
@@ -62,6 +65,12 @@ func show_demand(def) -> void:
 	_ring.progress = 1.0
 	_status.text = "医生需要：%s" % def.name_cn
 	deliverable = true
+	# 需求图标弹入
+	var pop := create_tween()
+	pop.tween_property(_demand_icon, "scale", Vector2(1.18, 1.18), 0.14) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop.tween_property(_demand_icon, "scale", Vector2.ONE, 0.10)
+	AudioManager.play("demand", -4.0)
 	_tween_ring(0.0, COUNTDOWN_DURATION, _on_countdown_done)
 
 

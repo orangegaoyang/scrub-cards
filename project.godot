@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 GameState="*res://scripts/autoload/game_state.gd"
 ProcedureData="*res://scripts/autoload/procedure_data.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
 
 [display]
 

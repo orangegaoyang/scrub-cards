@@ -23,6 +23,7 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_opened = true
+		AudioManager.play("pack", -2.0)
 		opened.emit(self)
 		_play_open_anim()
 		accept_event()

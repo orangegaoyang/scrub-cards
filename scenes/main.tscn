@@ -79,6 +79,10 @@ mouse_filter = 2
 layout_mode = 1
 mouse_filter = 2
 
+[node name="FxLayer" type="Control" parent="."]
+layout_mode = 1
+mouse_filter = 2
+
 [node name="StartButton" type="Button" parent="."]
 layout_mode = 1
 offset_left = 540.0
