@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/slot.gd" id="1_slot"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_outline"]
+bg_color = Color(1, 1, 1, 0.04)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.3)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="Slot" type="Control"]
+custom_minimum_size = Vector2(110, 150)
+layout_mode = 3
+script = ExtResource("1_slot")
+
+[node name="Outline" type="Panel" parent="."]
+layout_mode = 1
+offset_right = 110.0
+offset_bottom = 150.0
+mouse_filter = 2
+panel = SubResource("StyleBoxFlat_outline")
+
+[node name="IndexLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 4.0
+offset_top = 8.0
+offset_right = 106.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 22
+mouse_filter = 2
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HintLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 4.0
+offset_top = 110.0
+offset_right = 106.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.45)
+theme_override_font_sizes/font_size = 13
+mouse_filter = 2
+text = "用途"
+horizontal_alignment = 1
+vertical_alignment = 1

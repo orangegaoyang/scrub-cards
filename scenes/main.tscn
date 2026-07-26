@@ -1,0 +1,94 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/doctor_panel.tscn" id="2_doctor"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_start"]
+bg_color = Color(0.22, 0.6, 0.32, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Main" type="Control"]
+custom_minimum_size = Vector2(1280, 720)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_main")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.165, 0.239, 0.243, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 220.0
+offset_right = 980.0
+offset_bottom = 252.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+theme_override_font_sizes/font_size = 20
+text = ""
+horizontal_alignment = 1
+
+[node name="PhaseLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 640.0
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+theme_override_font_sizes/font_size = 14
+text = "准备阶段"
+
+[node name="HUDLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 820.0
+offset_top = 18.0
+offset_right = 1000.0
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+theme_override_font_sizes/font_size = 16
+text = "0 / 6"
+horizontal_alignment = 2
+
+[node name="SlotsLayer" type="Control" parent="."]
+layout_mode = 1
+mouse_filter = 2
+
+[node name="PackLayer" type="Control" parent="."]
+layout_mode = 1
+mouse_filter = 2
+
+[node name="DoctorPanel" parent="." instance=ExtResource("2_doctor")]
+
+[node name="CardsLayer" type="Control" parent="."]
+layout_mode = 1
+mouse_filter = 2
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 1
+offset_left = 540.0
+offset_top = 330.0
+offset_right = 740.0
+offset_bottom = 390.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_start")
+theme_override_styles/hover = SubResource("StyleBoxFlat_start")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_start")
+text = "开始手术"
+visible = false

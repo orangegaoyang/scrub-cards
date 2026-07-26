@@ -1,0 +1,278 @@
+extends Control
+## 主场景编排：
+## 准备：点击手术包 → 卡牌飞出 → 拖入顶部 6 槽位
+## 术中：开始按钮 → 医生面板滑入 → 需求(倒计时环) → 拖对应卡到递送区
+##       → 操作(环变绿填充) → 啵吐出灰卡(可选放回) → 下一件
+## 节奏：取回后 80% 概率 0.2–0.8s 要下一件，20% 概率 3–6s 停顿
+
+const CARD_SCENE := preload("res://scenes/card.tscn")
+const SLOT_SCENE := preload("res://scenes/slot.tscn")
+const PACK_SCENE := preload("res://scenes/surgery_pack.tscn")
+const NUM_INSTRUMENTS: int = 6
+
+# 布局
+const SLOT_W: float = 110.0
+const SLOT_GAP: float = 20.0
+const SLOT_Y: float = 50.0
+
+# 术中节奏
+const FIRST_DEMAND_DELAY: float = 1.0
+const COUNTDOWN_DURATION: float = 6.0  # 与 doctor_panel 一致，仅用于提示
+
+signal demand_resolved(result: String)
+
+@onready var _slots_layer: Control = $SlotsLayer
+@onready var _cards_layer: Control = $CardsLayer
+@onready var _pack_layer: Control = $PackLayer
+@onready var _hud_label: Label = $HUDLabel
+@onready var _phase_label: Label = $PhaseLabel
+@onready var _doctor_panel: DoctorPanel = $DoctorPanel
+@onready var _start_button: Button = $StartButton
+
+var _slots: Array = []
+var _cards: Array = []
+var _card_home: Dictionary = {}  # card -> Vector2（原槽位/牌堆位置）
+var _demand_index: int = 0
+var _demand_active: bool = false
+var _pack: SurgeryPack = null
+var _rng := RandomNumberGenerator.new()
+
+
+func _ready() -> void:
+	GameState.reset()
+	GameState.phase_changed.connect(_on_phase_changed)
+	GameState.score_updated.connect(_update_hud)
+	_rng.randomize()
+	_build_slots()
+	_spawn_pack()
+	_start_button.visible = false
+	_start_button.pressed.connect(_on_start_pressed)
+	_doctor_panel.countdown_expired.connect(_on_countdown_expired)
+	_doctor_panel.operate_complete.connect(_on_operate_complete)
+	_update_hud()
+	_on_phase_changed(GameState.current_phase)
+
+
+# ───────── 准备阶段：槽位 + 手术包 ─────────
+
+func _build_slots() -> void:
+	var total_w: float = NUM_INSTRUMENTS * SLOT_W + (NUM_INSTRUMENTS - 1) * SLOT_GAP
+	var start_x: float = (size.x - total_w) * 0.5
+	for i in NUM_INSTRUMENTS:
+		var slot = SLOT_SCENE.instantiate()
+		slot.index = i
+		var inst_id: String = ProcedureData.demand_sequence[i]
+		slot.hint = ProcedureData.get_instrument(inst_id).purpose
+		slot.position = Vector2(start_x + i * (SLOT_W + SLOT_GAP), SLOT_Y)
+		_slots_layer.add_child(slot)
+		_slots.append(slot)
+
+
+func _spawn_pack() -> void:
+	_pack = PACK_SCENE.instantiate()
+	_pack.position = Vector2(size.x * 0.5 - 70.0, size.y * 0.66)
+	_pack_layer.add_child(_pack)
+	_pack.opened.connect(_on_pack_opened)
+
+
+func _on_pack_opened(pack: SurgeryPack) -> void:
+	var origin: Vector2 = pack.global_position + pack.size * 0.5
+	_spawn_shuffled_cards_from(origin)
+
+
+func _spawn_shuffled_cards_from(origin: Vector2) -> void:
+	var ids: Array = ProcedureData.demand_sequence.duplicate()
+	ids.shuffle()
+	var positions := _compute_scatter_positions(ids.size())
+	for i in range(ids.size()):
+		var def = ProcedureData.get_instrument(ids[i])
+		var card = CARD_SCENE.instantiate()
+		card.def = def
+		card.position = origin
+		_cards_layer.add_child(card)
+		card.drag_ended.connect(_on_card_drag_ended)
+		_cards.append(card)
+		var tw: Tween = card.create_tween()
+		tw.tween_interval(i * 0.06)
+		tw.tween_property(card, "position", positions[i], 0.4) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+
+func _compute_scatter_positions(n: int) -> Array:
+	var out: Array = []
+	const COLS: int = 3
+	const CW: float = 125.0
+	const CH: float = 165.0
+	var start_x: float = size.x * 0.5 - (COLS * CW) * 0.5 + 8.0
+	var start_y: float = 290.0
+	for i in range(n):
+		var col: int = i % COLS
+		var row: int = i / COLS
+		var jitter := Vector2(_rng.randf_range(-8.0, 8.0), _rng.randf_range(-6.0, 6.0))
+		out.append(Vector2(start_x + col * CW, start_y + row * CH) + jitter)
+	return out
+
+
+# ───────── 拖拽落点分发 ─────────
+
+func _on_card_drag_ended(card: Card) -> void:
+	match GameState.current_phase:
+		GameState.Phase.PREP:
+			_handle_prep_drop(card)
+		GameState.Phase.SURGERY:
+			_handle_surgery_drop(card)
+		_:
+			pass  # 自由放置
+
+
+func _handle_prep_drop(card: Card) -> void:
+	for slot in _slots:
+		if not slot.is_empty():
+			continue
+		if _rects_overlap_global(card, slot):
+			if slot.index == card.def.slot_index:
+				_place_correct(card, slot)
+			else:
+				_reject(card, slot)
+			return
+
+
+func _handle_surgery_drop(card: Card) -> void:
+	if not _doctor_panel.deliverable:
+		return
+	if not _doctor_panel.get_drop_rect().intersects(Rect2(card.global_position, card.size)):
+		return
+	if _doctor_panel.receive_card(card):
+		card.global_position = _doctor_panel.get_drop_anchor_global_pos()
+		card.locked = true
+		_doctor_panel.start_operating(card)
+	else:
+		# 错误器械：闪红 + 弹回原位
+		card.flash_wrong()
+		var home: Vector2 = _card_home.get(card, card.global_position)
+		var tw: Tween = card.create_tween()
+		tw.tween_property(card, "global_position", home, 0.25)
+
+
+func _rects_overlap_global(a: Control, b: Control) -> bool:
+	var ra := Rect2(a.global_position, a.size)
+	var rb := Rect2(b.global_position, b.size)
+	return ra.intersects(rb)
+
+
+func _place_correct(card: Card, slot: Slot) -> void:
+	card.global_position = slot.global_position
+	_card_home[card] = slot.global_position
+	card.lock_in_place()
+	slot.occupy(card)
+	slot.flash_correct()
+	GameState.secure_prep_item(slot.index)
+
+
+func _reject(card: Card, slot: Slot) -> void:
+	slot.flash_wrong()
+	card.flash_wrong()
+	var home: Vector2 = _card_home.get(card, card.global_position)
+	var tw: Tween = card.create_tween()
+	tw.tween_property(card, "global_position", home, 0.25)
+
+
+# ───────── 术中循环 ─────────
+
+func _on_start_pressed() -> void:
+	_start_button.visible = false
+	for c: Card in _cards:
+		c.unlock_for_surgery()
+	GameState.start_surgery()
+	_doctor_panel.slide_in()
+	_demand_index = 0
+	_run_surgery_loop()
+
+
+func _run_surgery_loop() -> void:
+	await get_tree().create_timer(FIRST_DEMAND_DELAY).timeout
+	while _demand_index < NUM_INSTRUMENTS and GameState.current_phase == GameState.Phase.SURGERY:
+		var inst_id: String = ProcedureData.demand_sequence[_demand_index]
+		var def = ProcedureData.get_instrument(inst_id)
+		_demand_active = true
+		_doctor_panel.show_demand(def)
+		var result: String = await demand_resolved
+		match result:
+			"correct":
+				GameState.record_correct()
+			"timeout":
+				GameState.record_wrong()
+		_demand_index += 1
+		_doctor_panel.clear_demand()
+		if _demand_index < NUM_INSTRUMENTS:
+			await get_tree().create_timer(_rhythm_delay()).timeout
+	_finish_surgery()
+
+
+func _rhythm_delay() -> float:
+	if _rng.randf() < 0.8:
+		return _rng.randf_range(0.2, 0.8)
+	return _rng.randf_range(3.0, 6.0)
+
+
+func _on_countdown_expired() -> void:
+	if not _demand_active:
+		return
+	_demand_active = false
+	demand_resolved.emit("timeout")
+
+
+func _on_operate_complete(card: Card) -> void:
+	if not _demand_active:
+		return
+	_demand_active = false
+	_spit_out(card)
+	demand_resolved.emit("correct")
+
+
+func _spit_out(card: Card) -> void:
+	card.mark_used()
+	card.locked = false
+	var target := _get_spit_target()
+	var tw: Tween = card.create_tween()
+	tw.tween_property(card, "global_position", target, 0.45) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
+
+
+func _get_spit_target() -> Vector2:
+	return Vector2(
+		_rng.randf_range(120.0, 520.0),
+		_rng.randf_range(540.0, 620.0)
+	)
+
+
+func _finish_surgery() -> void:
+	GameState.finish_surgery()
+	_doctor_panel.slide_out()
+
+
+# ───────── UI ─────────
+
+func _update_hud() -> void:
+	match GameState.current_phase:
+		GameState.Phase.PREP, GameState.Phase.READY:
+			_hud_label.text = "已摆放 %d / %d" % [GameState.prep_correct, NUM_INSTRUMENTS]
+		GameState.Phase.SURGERY:
+			_hud_label.text = "递送 %d · 错误 %d" % [GameState.surgery_correct, GameState.surgery_wrong]
+		GameState.Phase.RESULT:
+			_hud_label.text = "★ %d" % GameState.get_stars()
+
+
+func _on_phase_changed(new_phase: int) -> void:
+	match new_phase:
+		GameState.Phase.PREP:
+			_phase_label.text = "准备阶段：点击手术包打开"
+		GameState.Phase.READY:
+			_phase_label.text = "摆放完成"
+			_start_button.visible = true
+		GameState.Phase.SURGERY:
+			_phase_label.text = "术中"
+		GameState.Phase.RESULT:
+			_phase_label.text = "手术完成！正确 %d · 错误 %d · 用时 %.1fs" % [
+				GameState.surgery_correct, GameState.surgery_wrong, GameState.surgery_elapsed]
+	_update_hud()

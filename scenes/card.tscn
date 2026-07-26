@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/card.gd" id="1_card"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_body"]
+bg_color = Color(0.969, 0.945, 0.875, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.18, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
+bg_color = Color(0, 0, 0, 0.25)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="Card" type="Control"]
+custom_minimum_size = Vector2(110, 150)
+layout_mode = 3
+script = ExtResource("1_card")
+
+[node name="Shadow" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 4.0
+offset_top = 6.0
+offset_right = 114.0
+offset_bottom = 156.0
+panel = SubResource("StyleBoxFlat_shadow")
+
+[node name="Body" type="Panel" parent="."]
+layout_mode = 1
+offset_right = 110.0
+offset_bottom = 150.0
+panel = SubResource("StyleBoxFlat_body")
+
+[node name="IconRect" type="ColorRect" parent="Body"]
+layout_mode = 1
+offset_left = 25.0
+offset_top = 14.0
+offset_right = 85.0
+offset_bottom = 74.0
+color = Color(0.9, 0.2, 0.2, 1)
+
+[node name="NameLabel" type="Label" parent="Body"]
+layout_mode = 1
+offset_left = 4.0
+offset_top = 82.0
+offset_right = 106.0
+offset_bottom = 108.0
+text = "器械"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PurposeLabel" type="Label" parent="Body"]
+layout_mode = 1
+offset_left = 4.0
+offset_top = 110.0
+offset_right = 106.0
+offset_bottom = 138.0
+theme_override_colors/font_color = Color(0.45, 0.45, 0.48, 1)
+theme_override_font_sizes/font_size = 12
+text = "用途"
+horizontal_alignment = 1
+vertical_alignment = 1
