@@ -1,0 +1,114 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/intro.gd" id="1_intro"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog"]
+bg_color = Color(0.12, 0.18, 0.19, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.55, 0.38, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.22, 0.6, 0.32, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_intro")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.118, 0.18, 0.18, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 120.0
+offset_right = 1280.0
+offset_bottom = 195.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 68
+text = "SCRUB CARDS"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 205.0
+offset_right = 1280.0
+offset_bottom = 240.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.62, 0.9)
+theme_override_font_sizes/font_size = 22
+text = "Day One  ·  Surgical Intern"
+horizontal_alignment = 1
+
+[node name="DialogPanel" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 290.0
+offset_top = 310.0
+offset_right = 990.0
+offset_bottom = 555.0
+mouse_filter = 2
+panel = SubResource("StyleBoxFlat_dialog")
+
+[node name="DialogText" type="Label" parent="DialogPanel"]
+layout_mode = 1
+offset_left = 32.0
+offset_top = 30.0
+offset_right = 668.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.9, 1)
+theme_override_font_sizes/font_size = 19
+text = "听好了，实习生。
+Halberg 医生还有五分钟开刀。
+器械台摆到位——她要什么，你递什么。
+递错？她会让你知道。
+第一天。别抖。"
+
+[node name="SpeakerLabel" type="Label" parent="DialogPanel"]
+layout_mode = 1
+offset_left = 430.0
+offset_top = 200.0
+offset_right = 668.0
+offset_bottom = 222.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.62, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+text = "—— 护士长 Reyes"
+horizontal_alignment = 2
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 1
+offset_left = 540.0
+offset_top = 590.0
+offset_right = 740.0
+offset_bottom = 640.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn")
+text = "开始值班"

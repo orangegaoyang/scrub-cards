@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Scrub Cards"
 config/description="Card-based scrub nurse sorting game (Stacklands-style)"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/intro.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

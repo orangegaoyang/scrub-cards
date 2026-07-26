@@ -112,3 +112,14 @@ horizontal_alignment = 2
 visible = false
 
 [node name="Report" parent="." instance=ExtResource("3_report")]
+
+[node name="Nametag" type="Label" parent="."]
+layout_mode = 1
+offset_left = 18.0
+offset_top = 688.0
+offset_right = 300.0
+offset_bottom = 712.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "·  实习生  ·  DAY 1  ·"

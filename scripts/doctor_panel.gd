@@ -65,7 +65,7 @@ func show_demand(def) -> void:
 	_ring.color = Color(1.0, 0.78, 0.25)
 	_ring.auto_tension = true   # 倒计时随时间变红 + 尾段脉动
 	_ring.progress = 1.0
-	_status.text = "医生需要：%s" % def.name_cn
+	_status.text = "Halberg 需要：%s" % def.name_cn
 	deliverable = true
 	# 需求图标弹入
 	var pop := create_tween()
@@ -93,7 +93,7 @@ func receive_card(card: Card) -> bool:
 
 
 func start_operating(card: Card) -> void:
-	_status.text = "操作中…"
+	_status.text = "Halberg 操作中…"
 	# 操作期间藏起倒计时环；进度直接打在卡牌上（更聚焦）
 	_ring.visible = false
 	card.show_operation_progress(true)
