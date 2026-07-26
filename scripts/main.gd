@@ -26,9 +26,11 @@ signal demand_resolved(result: String)
 @onready var _fx_layer: Control = $FxLayer
 @onready var _pack_layer: Control = $PackLayer
 @onready var _hud_label: Label = $HUDLabel
+@onready var _combo_label: Label = $ComboLabel
 @onready var _phase_label: Label = $PhaseLabel
 @onready var _doctor_panel: DoctorPanel = $DoctorPanel
 @onready var _start_button: Button = $StartButton
+@onready var _report: Report = $Report
 
 var _slots: Array = []
 var _cards: Array = []
@@ -43,11 +45,14 @@ func _ready() -> void:
 	GameState.reset()
 	GameState.phase_changed.connect(_on_phase_changed)
 	GameState.score_updated.connect(_update_hud)
+	GameState.combo_changed.connect(_on_combo_changed)
 	_rng.randomize()
 	_build_slots()
 	_spawn_pack()
 	_start_button.visible = false
 	_start_button.pressed.connect(_on_start_pressed)
+	_combo_label.visible = false
+	_combo_label.pivot_offset = Vector2(80, 16)
 	_doctor_panel.countdown_expired.connect(_on_countdown_expired)
 	_doctor_panel.operate_complete.connect(_on_operate_complete)
 	_update_hud()
@@ -150,8 +155,9 @@ func _handle_surgery_drop(card: Card) -> void:
 		card.locked = true
 		_doctor_panel.start_operating(card)
 	else:
-		# 错误器械：闪红 + 弹回原位
+		# 错误器械：闪红 + 计误 + 弹回原位
 		card.flash_wrong()
+		GameState.record_wrong(false)
 		AudioManager.play("wrong", -4.0)
 		var home: Vector2 = _card_home.get(card, card.global_position)
 		var tw: Tween = card.create_tween()
@@ -203,12 +209,7 @@ func _run_surgery_loop() -> void:
 		var def = ProcedureData.get_instrument(inst_id)
 		_demand_active = true
 		_doctor_panel.show_demand(def)
-		var result: String = await demand_resolved
-		match result:
-			"correct":
-				GameState.record_correct()
-			"timeout":
-				GameState.record_wrong()
+		await demand_resolved   # 计分在 _on_operate_complete / _on_countdown_expired 内完成
 		_demand_index += 1
 		_doctor_panel.clear_demand()
 		if _demand_index < NUM_INSTRUMENTS:
@@ -226,6 +227,7 @@ func _on_countdown_expired() -> void:
 	if not _demand_active:
 		return
 	_demand_active = false
+	GameState.record_wrong(true)
 	demand_resolved.emit("timeout")
 
 
@@ -233,11 +235,18 @@ func _on_operate_complete(card: Card) -> void:
 	if not _demand_active:
 		return
 	_demand_active = false
+	GameState.record_correct()
+	# 爽点：PERFECT 弹字 + 升调音效（combo 越高音越高）
+	var center: Vector2 = _doctor_panel.get_drop_rect().get_center()
+	_float_text(center, "PERFECT", Color(1.0, 0.85, 0.3))
+	var pitch: float = clampf(1.0 + (GameState.combo - 1) * 0.06, 1.0, 2.0)
+	AudioManager.play("correct", -3.0, pitch)
 	_spit_out(card)
 	demand_resolved.emit("correct")
 
 
 func _spit_out(card: Card) -> void:
+	card.show_operation_progress(false)
 	card.mark_used()
 	card.locked = false
 	var target := _get_spit_target()
@@ -279,9 +288,33 @@ func _burst(pos: Vector2, color: Color, count: int = 12, spread: float = 1.0) ->
 		tw.chain().tween_callback(s.queue_free)
 
 
+## 浮空文字（PERFECT 等）：弹一下、上浮、淡出。
+func _float_text(pos: Vector2, text: String, color: Color) -> void:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", 28)
+	l.add_theme_color_override("font_color", color)
+	l.position = pos - Vector2(60, 18)
+	l.pivot_offset = Vector2(60, 18)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fx_layer.add_child(l)
+	var sc := create_tween()
+	sc.tween_property(l, "scale", Vector2(1.25, 1.25), 0.12) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	sc.tween_property(l, "scale", Vector2.ONE, 0.10)
+	var mv := create_tween()
+	mv.set_parallel(true)
+	mv.tween_property(l, "position:y", l.position.y - 70.0, 0.8) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	mv.tween_property(l, "modulate:a", 0.0, 0.8).set_delay(0.25)
+	mv.chain().tween_callback(l.queue_free)
+
+
 func _finish_surgery() -> void:
 	GameState.finish_surgery()
 	_doctor_panel.slide_out()
+	await get_tree().create_timer(0.5).timeout
+	_report.show_report()
 
 
 # ───────── UI ─────────
@@ -294,6 +327,18 @@ func _update_hud() -> void:
 			_hud_label.text = "递送 %d · 错误 %d" % [GameState.surgery_correct, GameState.surgery_wrong]
 		GameState.Phase.RESULT:
 			_hud_label.text = "★ %d" % GameState.get_stars()
+
+
+func _on_combo_changed(combo: int) -> void:
+	if combo >= 2:
+		_combo_label.text = "COMBO  x%d" % combo
+		_combo_label.visible = true
+		_combo_label.scale = Vector2(1.35, 1.35)
+		var tw := create_tween()
+		tw.tween_property(_combo_label, "scale", Vector2.ONE, 0.22) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	else:
+		_combo_label.visible = false
 
 
 func _on_phase_changed(new_phase: int) -> void:

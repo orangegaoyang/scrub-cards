@@ -4,7 +4,7 @@ class_name DoctorPanel
 ## 倒计时(橙)→ 递送正确 → 操作(绿填充) → operate_complete 信号 → main 吐牌。
 
 signal countdown_expired()
-signal operate_complete(card: Control)
+signal operate_complete(card: Card)
 
 const PANEL_W: float = 260.0
 const COUNTDOWN_DURATION: float = 6.0
@@ -45,6 +45,7 @@ func slide_out() -> void:
 func clear_demand() -> void:
 	_kill_ring_tween()
 	deliverable = false
+	_ring.auto_tension = false
 	_ring.progress = 0.0
 	_ring.visible = false
 	_demand_icon.visible = false
@@ -62,6 +63,7 @@ func show_demand(def) -> void:
 	_demand_name.visible = true
 	_ring.visible = true
 	_ring.color = Color(1.0, 0.78, 0.25)
+	_ring.auto_tension = true   # 倒计时随时间变红 + 尾段脉动
 	_ring.progress = 1.0
 	_status.text = "医生需要：%s" % def.name_cn
 	deliverable = true
@@ -82,7 +84,7 @@ func _on_countdown_done() -> void:
 
 
 ## 尝试接收卡牌。返回 true=正确接收，false=不接受（未激活/错的器械）。
-func receive_card(card) -> bool:
+func receive_card(card: Card) -> bool:
 	if not deliverable or card.def.id != current_demand_id:
 		return false
 	deliverable = false
@@ -90,14 +92,18 @@ func receive_card(card) -> bool:
 	return true
 
 
-func start_operating(card: Control) -> void:
+func start_operating(card: Card) -> void:
 	_status.text = "操作中…"
-	_ring.color = Color(0.4, 0.95, 0.5)
-	_ring.progress = 0.0
-	_tween_ring(1.0, OPERATE_DURATION, _on_operate_done.bind(card))
+	# 操作期间藏起倒计时环；进度直接打在卡牌上（更聚焦）
+	_ring.visible = false
+	card.show_operation_progress(true)
+	_kill_ring_tween()
+	_ring_tween = create_tween()
+	_ring_tween.tween_method(card.set_operation_progress, 0.0, 1.0, OPERATE_DURATION)
+	_ring_tween.finished.connect(_on_operate_done.bind(card))
 
 
-func _on_operate_done(card: Control) -> void:
+func _on_operate_done(card: Card) -> void:
 	operate_complete.emit(card)
 
 

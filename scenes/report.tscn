@@ -1,0 +1,131 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/report.gd" id="1_report"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+bg_color = Color(0.98, 0.97, 0.93, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.2, 0.45, 0.28, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="Report" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_report")
+
+[node name="DimBg" type="ColorRect" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="Paper" type="Panel" parent="."]
+layout_mode = 1
+offset_left = 320.0
+offset_top = 90.0
+offset_right = 960.0
+offset_bottom = 640.0
+mouse_filter = 2
+panel = SubResource("StyleBoxFlat_paper")
+
+[node name="TitleLabel" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 28.0
+offset_right = 640.0
+offset_bottom = 70.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.2, 0.45, 0.28, 1)
+theme_override_font_sizes/font_size = 30
+text = "Procedure Complete"
+horizontal_alignment = 1
+
+[node name="PatientLabel" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 78.0
+offset_right = 640.0
+offset_bottom = 104.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.3, 0.3, 0.32, 1)
+theme_override_font_sizes/font_size = 17
+text = "Patient status: Stable"
+horizontal_alignment = 1
+
+[node name="AccuracyLine" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 80.0
+offset_top = 150.0
+offset_right = 560.0
+offset_bottom = 180.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.2, 1)
+theme_override_font_sizes/font_size = 17
+text = "✓  Instrument accuracy   100%"
+
+[node name="PrepLine" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 80.0
+offset_top = 186.0
+offset_right = 560.0
+offset_bottom = 216.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.2, 1)
+theme_override_font_sizes/font_size = 17
+text = "✓  Preparation time   Excellent"
+
+[node name="DelayLine" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 80.0
+offset_top = 222.0
+offset_right = 560.0
+offset_bottom = 252.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.2, 0.25, 0.2, 1)
+theme_override_font_sizes/font_size = 17
+text = "✓  No instrument delays"
+
+[node name="FlavorLabel" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 286.0
+offset_right = 600.0
+offset_bottom = 318.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.4, 0.4, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+text = "The surgical team appreciated your support."
+horizontal_alignment = 1
+
+[node name="UnlockLabel" type="Label" parent="Paper"]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 348.0
+offset_right = 600.0
+offset_bottom = 430.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.55, 0.4, 0.15, 1)
+theme_override_font_sizes/font_size = 15
+text = "New unlock:
+Cardiac Surgery Room
++12 new instruments"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="Paper"]
+layout_mode = 1
+offset_left = 240.0
+offset_top = 452.0
+offset_right = 400.0
+offset_bottom = 498.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "再来一局"

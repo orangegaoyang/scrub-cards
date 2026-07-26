@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/doctor_panel.tscn" id="2_doctor"]
+[ext_resource type="PackedScene" path="res://scenes/report.tscn" id="3_report"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_start"]
 bg_color = Color(0.22, 0.6, 0.32, 1)
@@ -96,3 +97,18 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_start")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_start")
 text = "开始手术"
 visible = false
+
+[node name="ComboLabel" type="Label" parent="."]
+layout_mode = 1
+offset_left = 820.0
+offset_top = 48.0
+offset_right = 1100.0
+offset_bottom = 86.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.3, 1)
+theme_override_font_sizes/font_size = 26
+text = "COMBO  x2"
+horizontal_alignment = 2
+visible = false
+
+[node name="Report" parent="." instance=ExtResource("3_report")]

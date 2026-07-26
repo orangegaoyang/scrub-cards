@@ -37,7 +37,7 @@ func _load_all() -> void:
 	dir.list_dir_end()
 
 
-func play(name: String, vol_db: float = DEFAULT_VOL) -> void:
+func play(name: String, vol_db: float = DEFAULT_VOL, pitch: float = 1.0) -> void:
 	var s = _streams.get(name)
 	if s == null:
 		return
@@ -45,6 +45,7 @@ func play(name: String, vol_db: float = DEFAULT_VOL) -> void:
 	_pool_idx = (_pool_idx + 1) % POOL_SIZE
 	p.stream = s
 	p.volume_db = vol_db
+	p.pitch_scale = maxf(0.5, pitch)
 	p.play()
 
 
