@@ -27,7 +27,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(PANEL_W, 720)
 	size = Vector2(PANEL_W, 720)
 	position = Vector2(1280, 0)  # 屏幕右外
-	_clear_demand()
+	clear_demand()
 
 
 func slide_in() -> void:
@@ -41,7 +41,7 @@ func slide_out() -> void:
 	tw.tween_property(self, "position:x", 1280.0, 0.4)
 
 
-func _clear_demand() -> void:
+func clear_demand() -> void:
 	_kill_ring_tween()
 	deliverable = false
 	_ring.progress = 0.0
