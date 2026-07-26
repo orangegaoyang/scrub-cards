@@ -24,7 +24,7 @@ layout_mode = 1
 offset_right = 110.0
 offset_bottom = 150.0
 mouse_filter = 2
-panel = SubResource("StyleBoxFlat_outline")
+theme_override_styles/panel = SubResource("StyleBoxFlat_outline")
 
 [node name="IndexLabel" type="Label" parent="."]
 layout_mode = 1

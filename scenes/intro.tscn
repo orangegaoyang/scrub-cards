@@ -71,7 +71,7 @@ offset_top = 310.0
 offset_right = 990.0
 offset_bottom = 555.0
 mouse_filter = 2
-panel = SubResource("StyleBoxFlat_dialog")
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialog")
 
 [node name="DialogText" type="Label" parent="DialogPanel"]
 layout_mode = 1

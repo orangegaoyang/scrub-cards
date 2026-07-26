@@ -24,7 +24,7 @@ layout_mode = 1
 offset_right = 140.0
 offset_bottom = 140.0
 mouse_filter = 2
-panel = SubResource("StyleBoxFlat_pack")
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
 
 [node name="CrossV" type="ColorRect" parent="Body"]
 layout_mode = 1

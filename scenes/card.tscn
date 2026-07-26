@@ -32,13 +32,13 @@ offset_left = 4.0
 offset_top = 6.0
 offset_right = 114.0
 offset_bottom = 156.0
-panel = SubResource("StyleBoxFlat_shadow")
+theme_override_styles/panel = SubResource("StyleBoxFlat_shadow")
 
 [node name="Body" type="Panel" parent="."]
 layout_mode = 1
 offset_right = 110.0
 offset_bottom = 150.0
-panel = SubResource("StyleBoxFlat_body")
+theme_override_styles/panel = SubResource("StyleBoxFlat_body")
 
 [node name="IconRect" type="ColorRect" parent="Body"]
 layout_mode = 1

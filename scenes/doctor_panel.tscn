@@ -33,7 +33,7 @@ layout_mode = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-panel = SubResource("StyleBoxFlat_bg")
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="TitleLabel" type="Label" parent="."]
 layout_mode = 1
@@ -102,7 +102,7 @@ layout_mode = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-panel = SubResource("StyleBoxFlat_drop")
+theme_override_styles/panel = SubResource("StyleBoxFlat_drop")
 
 [node name="DropLabel" type="Label" parent="DropZone"]
 layout_mode = 1
