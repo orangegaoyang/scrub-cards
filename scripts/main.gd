@@ -30,7 +30,7 @@ signal demand_resolved(result: String)
 @onready var _phase_label: Label = $PhaseLabel
 @onready var _doctor_panel: DoctorPanel = $DoctorPanel
 @onready var _start_button: Button = $StartButton
-@onready var _report: Report = $Report
+@onready var _report = $Report
 
 var _slots: Array = []
 var _cards: Array = []
