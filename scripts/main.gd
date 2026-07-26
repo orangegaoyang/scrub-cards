@@ -28,6 +28,7 @@ signal demand_resolved(result: String)
 @onready var _hud_label: Label = $HUDLabel
 @onready var _combo_label: Label = $ComboLabel
 @onready var _phase_label: Label = $PhaseLabel
+@onready var _nametag: Label = $Nametag
 @onready var _doctor_panel: DoctorPanel = $DoctorPanel
 @onready var _start_button: Button = $StartButton
 @onready var _report = $Report
@@ -56,7 +57,13 @@ func _ready() -> void:
 	_doctor_panel.countdown_expired.connect(_on_countdown_expired)
 	_doctor_panel.operate_complete.connect(_on_operate_complete)
 	_update_hud()
+	_update_nametag()
 	_on_phase_changed(GameState.current_phase)
+
+
+func _update_nametag() -> void:
+	var rank: Dictionary = GameState.get_rank()
+	_nametag.text = "·  %s  ·  DAY %d  ·" % [rank.title, GameState.meta_day]
 
 
 # ───────── 准备阶段：槽位 + 手术包 ─────────

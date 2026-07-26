@@ -33,11 +33,47 @@ var current_demand_index: int = 0
 var combo: int = 0
 var max_combo: int = 0
 
+# 跨次存档：实习生成长进度
+var meta_day: int = 1   # 当前值班第几天（每完成一台手术 +1）
+
 const TOTAL_STEPS: int = 6
 
 # 准备阶段评级阈值（秒）
 const PREP_EXCELLENT: float = 25.0
 const PREP_GOOD: float = 45.0
+
+# 职级：按值班天数晋升
+const RANKS: Array = [
+	{title = "实习生", min_day = 1, span = 1},
+	{title = "见习器械护士", min_day = 2, span = 2},
+	{title = "器械护士", min_day = 4, span = 3},
+	{title = "资深器械护士", min_day = 7, span = 999},
+]
+const SAVE_PATH := "user://intern_progress.json"
+
+
+func _ready() -> void:
+	_load_meta()
+
+
+func _load_meta() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var parsed = JSON.parse_string(f.get_as_text())
+	f.close()
+	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("day"):
+		meta_day = int(parsed["day"])
+
+
+func _save_meta() -> void:
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(JSON.stringify({"day": meta_day}))
+	f.close()
 
 
 func reset() -> void:
@@ -98,6 +134,8 @@ func record_wrong(is_timeout: bool = false) -> void:
 
 func finish_surgery() -> void:
 	surgery_elapsed = (Time.get_ticks_msec() / 1000.0) - surgery_start_time
+	meta_day += 1
+	_save_meta()
 	current_phase = Phase.RESULT
 
 
@@ -122,12 +160,46 @@ func get_stars() -> int:
 
 func get_prep_rating() -> String:
 	if prep_elapsed <= PREP_EXCELLENT:
-		return "Excellent"
+		return "优秀"
 	elif prep_elapsed <= PREP_GOOD:
-		return "Good"
+		return "良好"
 	else:
-		return "Fair"
+		return "一般"
 
 
 func get_patient_status() -> String:
-	return "Stable" if get_accuracy() >= 0.8 else "Critical"
+	return "稳定" if get_accuracy() >= 0.8 else "危急"
+
+
+## 护士长 Reyes 按准确率给的评语（成长反馈）。
+func get_verdict() -> String:
+	var acc: float = get_accuracy()
+	if acc < 0.6:
+		return "……回去把器械图谱再翻两遍吧。"
+	elif acc < 0.8:
+		return "勉强能用。明天手别抖。"
+	elif acc < 0.95:
+		return "不错，有点样子了。"
+	else:
+		return "今天漂亮。Halberg 都没骂人——头一回。"
+
+
+## 当前职级信息：title / index / days_into / days_for / progress / is_max
+func get_rank() -> Dictionary:
+	var d: int = meta_day
+	for i in range(RANKS.size() - 1, -1, -1):
+		var r: Dictionary = RANKS[i]
+		if d >= int(r.min_day):
+			var into: int = d - int(r.min_day)
+			var span: int = int(r.span)
+			var is_max: bool = i >= RANKS.size() - 1
+			var pct: float = 1.0 if is_max else clampf(float(into) / float(span), 0.0, 1.0)
+			return {
+				"title": r.title,
+				"index": i,
+				"days_into": into,
+				"days_for": span,
+				"progress": pct,
+				"is_max": is_max,
+			}
+	return {"title": RANKS[0].title, "index": 0, "days_into": 0, "days_for": 1, "progress": 0.0, "is_max": false}

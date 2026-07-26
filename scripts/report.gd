@@ -1,8 +1,8 @@
 extends Control
 class_name Report
-## 手术报告（RESULT）：分拍揭晓，营造仪式感。
-## 流程：暗场→纸面缩入+sting→标题砸入→星星逐颗点亮→逐行 tick→
-##       flavor→解锁 shimmer→按钮淡入。
+## 手术报告（RESULT）：全中文 + 分拍揭晓 + 实习生成长反馈。
+## 流程：暗场→纸面缩入+sting→标题砸入→星星→表现行→导师评语→
+##       值班进度（天数/职级/进度条）→新解锁（shimmer）→按钮。
 
 const REVEAL_OFFSET: float = 14.0
 
@@ -14,7 +14,10 @@ const REVEAL_OFFSET: float = 14.0
 @onready var _accuracy: Label = $Paper/AccuracyLine
 @onready var _prep: Label = $Paper/PrepLine
 @onready var _delay: Label = $Paper/DelayLine
-@onready var _flavor: Label = $Paper/FlavorLabel
+@onready var _verdict: Label = $Paper/VerdictLabel
+@onready var _rank: Label = $Paper/RankLabel
+@onready var _bar_bg: ColorRect = $Paper/RankBarBg
+@onready var _bar_fill: ColorRect = $Paper/RankBarFill
 @onready var _unlock: Label = $Paper/UnlockLabel
 @onready var _restart: Button = $Paper/RestartButton
 
@@ -30,14 +33,16 @@ func _ready() -> void:
 	_restart.disabled = true
 	_restart.modulate.a = 0.0
 	_restart.pressed.connect(_on_restart_pressed)
-	# 所有可揭晓元素先藏起
-	for n: Control in [_title, _patient, _accuracy, _prep, _delay, _flavor, _unlock]:
+	for n: Control in [_title, _patient, _accuracy, _prep, _delay, _verdict, _rank, _unlock, _bar_bg]:
 		n.modulate.a = 0.0
 		n.position.y += REVEAL_OFFSET
 	for s in _stars:
 		s.pivot_offset = s.size * 0.5
 		s.modulate.a = 0.0
-		(s as Label).text = "★"  # 占位；show_report 里再决定点亮与否
+		(s as Label).text = "★"
+	# 进度条 fill：从左端生长
+	_bar_fill.pivot_offset = Vector2.ZERO
+	_bar_fill.scale = Vector2.ZERO
 
 
 func show_report() -> void:
@@ -47,7 +52,6 @@ func show_report() -> void:
 	_fill_report()
 	visible = true
 	AudioManager.play("sting", -2.0)
-	# 暗场 + 纸面缩入
 	var tw_dim := create_tween()
 	tw_dim.tween_property(_dim, "modulate:a", 1.0, 0.35)
 	var tw_paper := create_tween()
@@ -55,16 +59,18 @@ func show_report() -> void:
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw_paper.parallel().tween_property(_paper, "modulate:a", 1.0, 0.35)
 	await get_tree().create_timer(0.4).timeout
-	# 标题砸入
+
 	_reveal_slam(_title)
 	await get_tree().create_timer(0.35).timeout
-	# 星星逐颗点亮
+
+	# 星星
 	var earned: int = GameState.get_stars()
 	for i in range(3):
 		_reveal_star(_stars[i], i < earned, 1.0 + i * 0.10)
 		await get_tree().create_timer(0.16).timeout
 	await get_tree().create_timer(0.18).timeout
-	# 数据行逐行 tick（升调）
+
+	# 患者状态 + 表现行
 	_reveal_line(_patient, "tick", 0.9)
 	await get_tree().create_timer(0.12).timeout
 	_reveal_line(_accuracy, "tick", 1.0)
@@ -72,14 +78,25 @@ func show_report() -> void:
 	_reveal_line(_prep, "tick", 1.1)
 	await get_tree().create_timer(0.12).timeout
 	_reveal_line(_delay, "tick", 1.2)
-	await get_tree().create_timer(0.28).timeout
-	# flavor
-	_reveal_line(_flavor, "", 1.0)
-	await get_tree().create_timer(0.35).timeout
-	# 解锁（shimmer）
+	await get_tree().create_timer(0.25).timeout
+
+	# 导师评语
+	_reveal_line(_verdict, "tick", 0.8)
+	await get_tree().create_timer(0.3).timeout
+
+	# 值班进度：职级 + 进度条
+	_reveal_line(_rank, "tick", 1.0)
+	await get_tree().create_timer(0.15).timeout
+	_reveal_line(_bar_bg, "", 1.0)
+	await get_tree().create_timer(0.18).timeout
+	_grow_rank_bar()
+	await get_tree().create_timer(0.45).timeout
+
+	# 新解锁（shimmer）
 	_reveal_unlock()
 	await get_tree().create_timer(0.45).timeout
-	# 按钮淡入 + 启用
+
+	# 按钮
 	_restart.disabled = false
 	var tw_r := create_tween()
 	tw_r.tween_property(_restart, "modulate:a", 1.0, 0.3)
@@ -87,13 +104,26 @@ func show_report() -> void:
 
 func _fill_report() -> void:
 	var acc: float = GameState.get_accuracy()
-	_patient.text = "Patient status: %s" % GameState.get_patient_status()
-	_accuracy.text = "✓  Instrument accuracy   %d%%" % int(round(acc * 100.0))
-	_prep.text = "✓  Preparation time   %s" % GameState.get_prep_rating()
-	if GameState.surgery_timeouts == 0:
-		_delay.text = "✓  No instrument delays"
-	else:
-		_delay.text = "✗  %d instrument delay(s)" % GameState.surgery_timeouts
+	_patient.text = "患者状态：%s" % GameState.get_patient_status()
+	_accuracy.text = "✓  器械准确率   %d%%" % int(round(acc * 100.0))
+	_prep.text = "✓  准备时间   %s" % GameState.get_prep_rating()
+	_delay.text = ("✓  无器械延误" if GameState.surgery_timeouts == 0
+			else "✗  %d 次器械延误" % GameState.surgery_timeouts)
+	_verdict.text = "Reyes：%s" % GameState.get_verdict()
+	var rank: Dictionary = GameState.get_rank()
+	var t: String = "值班第 %d 天 · %s" % [GameState.meta_day, rank.title]
+	if rank.is_max:
+		t += "（满级）"
+	_rank.text = t
+
+
+func _grow_rank_bar() -> void:
+	var rank: Dictionary = GameState.get_rank()
+	var tw := create_tween()
+	tw.tween_property(_bar_fill, "scale:x", float(rank.progress), 0.5) \
+		.set_ease(Tween.EASE_OUT)
+	if not rank.is_max:
+		AudioManager.play("tick", -6.0, 1.3)
 
 
 func _reveal_line(node: Control, sound: String, pitch: float) -> void:
