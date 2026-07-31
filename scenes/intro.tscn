@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/common/avatar.PNG" id="4_avatar"]
 [ext_resource type="Texture2D" path="res://assets/images/common/Day.PNG" id="5_day"]
 [ext_resource type="Texture2D" path="res://assets/images/common/setting.PNG" id="6_setting"]
-[ext_resource type="Texture2D" path="res://assets/images/intro/t_surgery.PNG" id="7_tsurgery"]
+[ext_resource type="PackedScene" path="res://scenes/t_surgery_board.tscn" id="7_tsurgery"]
 [ext_resource type="Texture2D" path="res://assets/images/intro/sticker.PNG" id="8_sticker"]
 [ext_resource type="Texture2D" path="res://assets/images/intro/start_btn.PNG" id="9_start"]
 
@@ -93,6 +93,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 25.0
+offset_right = -50.0
+offset_bottom = -30.0
 mouse_filter = 2
 
 [node name="TopRow" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox"]
@@ -106,14 +110,9 @@ size_flags_horizontal = 3
 alignment = 2
 mouse_filter = 2
 
-[node name="TSurgery" type="TextureRect" parent="RootVBox/MainArea/ContentVBox/TopRow/LeftSide"]
+[node name="TSurgery" parent="RootVBox/MainArea/ContentVBox/TopRow/LeftSide" instance=ExtResource("7_tsurgery")]
 layout_mode = 2
-custom_minimum_size = Vector2(380, 383)
 size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("7_tsurgery")
-expand_mode = 2
-stretch_mode = 0
 
 [node name="RightSide" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox/TopRow"]
 layout_mode = 2

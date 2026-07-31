@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/images/intro/t_surgery.PNG" id="1_tex"]
+[ext_resource type="Shader" path="res://assets/shaders/perspective_tilt.gdshader" id="2_persp"]
+[ext_resource type="Shader" path="res://assets/shaders/soft_shadow.gdshader" id="3_shadow"]
+
+[sub_resource type="ShaderMaterial" id="sm_persp"]
+shader = ExtResource("2_persp")
+shader_parameter/top_narrow = 0.12
+
+[sub_resource type="ShaderMaterial" id="sm_shadow"]
+shader = ExtResource("3_shadow")
+shader_parameter/radius = 6.0
+
+[node name="Board" type="Control"]
+custom_minimum_size = Vector2(380, 383)
+layout_mode = 3
+mouse_filter = 2
+
+[node name="Shadow" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 12.0
+offset_right = 4.0
+offset_bottom = 12.0
+mouse_filter = 2
+texture = ExtResource("1_tex")
+expand_mode = 2
+stretch_mode = 0
+modulate = Color(0, 0, 0, 0.32)
+material = SubResource("sm_shadow")
+
+[node name="BoardTex" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("1_tex")
+expand_mode = 2
+stretch_mode = 0
+material = SubResource("sm_persp")
