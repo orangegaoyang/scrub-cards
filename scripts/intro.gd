@@ -1,9 +1,9 @@
 extends Control
-## 入口页：图片化布局。点"开始准备"进入 preparation 页（main.tscn）。
+## 入口页：Container 布局。点"开始准备"进入 preparation 页（main.tscn）。
 
 const MAIN_SCENE := "res://scenes/main.tscn"
 
-@onready var _start: TextureButton = $StartBtn
+@onready var _start: TextureButton = %StartBtn
 
 
 func _ready() -> void:

@@ -27,73 +27,119 @@ texture = ExtResource("2_bg")
 expand_mode = 2
 stretch_mode = 0
 
-[node name="Mayo" type="TextureRect" parent="."]
+[node name="RootVBox" type="VBoxContainer" parent="."]
 layout_mode = 1
-offset_left = 88.0
-offset_top = 100.0
-offset_right = 1192.0
-offset_bottom = 720.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2
-texture = ExtResource("3_mayo")
-expand_mode = 2
-stretch_mode = 0
 
-[node name="TSurgery" type="TextureRect" parent="."]
-layout_mode = 1
-offset_left = 150.0
-offset_top = 165.0
-offset_right = 590.0
-offset_bottom = 608.0
+[node name="MenuBar" type="HBoxContainer" parent="RootVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 110)
+size_flags_vertical = 1
 mouse_filter = 2
-texture = ExtResource("7_tsurgery")
-expand_mode = 2
-stretch_mode = 0
 
-[node name="Sticker" type="TextureRect" parent="."]
-layout_mode = 1
-offset_left = 1010.0
-offset_top = 210.0
-offset_right = 1135.0
-offset_bottom = 372.0
-mouse_filter = 2
-texture = ExtResource("8_sticker")
-expand_mode = 2
-stretch_mode = 0
-
-[node name="StartBtn" type="TextureButton" parent="."]
-layout_mode = 1
-offset_left = 505.0
-offset_top = 622.0
-offset_right = 775.0
-offset_bottom = 694.0
-texture_normal = ExtResource("9_start")
-
-[node name="Avatar" type="TextureRect" parent="."]
-layout_mode = 1
-offset_left = 24.0
-offset_top = 10.0
-offset_right = 314.0
-offset_bottom = 89.0
+[node name="Avatar" type="TextureRect" parent="RootVBox/MenuBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(290, 80)
+size_flags_horizontal = 1
+size_flags_vertical = 4
 mouse_filter = 2
 texture = ExtResource("4_avatar")
 expand_mode = 2
 stretch_mode = 0
 
-[node name="Day" type="TextureRect" parent="."]
-layout_mode = 1
-offset_left = 1100.0
-offset_top = 8.0
-offset_right = 1187.0
-offset_bottom = 103.0
+[node name="MenuSpacer" type="Control" parent="RootVBox/MenuBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Day" type="TextureRect" parent="RootVBox/MenuBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(87, 95)
+size_flags_horizontal = 1
+size_flags_vertical = 4
 mouse_filter = 2
 texture = ExtResource("5_day")
 expand_mode = 2
 stretch_mode = 0
 
-[node name="Setting" type="TextureButton" parent="."]
-layout_mode = 1
-offset_left = 1200.0
-offset_top = 22.0
-offset_right = 1254.0
-offset_bottom = 79.0
+[node name="Setting" type="TextureButton" parent="RootVBox/MenuBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(54, 57)
+size_flags_horizontal = 1
+size_flags_vertical = 4
 texture_normal = ExtResource("6_setting")
+
+[node name="MainArea" type="Control" parent="RootVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Mayo" type="TextureRect" parent="RootVBox/MainArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_mayo")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="ContentVBox" type="VBoxContainer" parent="RootVBox/MainArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="TopRow" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="LeftSide" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+mouse_filter = 2
+
+[node name="TSurgery" type="TextureRect" parent="RootVBox/MainArea/ContentVBox/TopRow/LeftSide"]
+layout_mode = 2
+custom_minimum_size = Vector2(380, 383)
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_tsurgery")
+expand_mode = 2
+stretch_mode = 0
+
+[node name="RightSide" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 0
+mouse_filter = 2
+
+[node name="Sticker" type="TextureRect" parent="RootVBox/MainArea/ContentVBox/TopRow/RightSide"]
+layout_mode = 2
+custom_minimum_size = Vector2(125, 162)
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("8_sticker")
+expand_mode = 2
+stretch_mode = 0
+
+[node name="BtnRow" type="HBoxContainer" parent="RootVBox/MainArea/ContentVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 110)
+size_flags_vertical = 1
+alignment = 1
+mouse_filter = 2
+
+[node name="StartBtn" type="TextureButton" parent="RootVBox/MainArea/ContentVBox/BtnRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(270, 72)
+size_flags_vertical = 4
+unique_name_in_owner = true
+texture_normal = ExtResource("9_start")
